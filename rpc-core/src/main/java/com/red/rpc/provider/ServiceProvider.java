@@ -1,14 +1,14 @@
-package com.red.rpc.transmission;
+package com.red.rpc.provider;
 
 import com.red.rpc.config.RpcServiceConfig;
 
 /**
  * @author red
- * @date 2025/5/16
+ * @date 2025/5/17
  * @description
  */
-public interface RpcServer {
-    void start();
-
+public interface ServiceProvider {
     void publishService(RpcServiceConfig config);
+
+    Object getService(String rpcServiceName);
 }

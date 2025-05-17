@@ -1,5 +1,6 @@
 package com.red.rpc.dto;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,4 +35,8 @@ public class RpcReq implements Serializable {
     //             -> AdminUserServiceImpl.getUser()
     //区分实现的不同类型
     private String group;
+
+    public String rpcServiceName(){
+        return getInterfaceName() + StrUtil.blankToDefault(getVersion(),StrUtil.EMPTY) + StrUtil.blankToDefault(getGroup(),StrUtil.EMPTY);
+    }
 }
