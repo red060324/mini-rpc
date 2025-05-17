@@ -4,6 +4,7 @@ import com.red.api.User;
 import com.red.rpc.dto.RpcReq;
 import com.red.rpc.dto.RpcResp;
 import com.red.rpc.transmission.RpcClient;
+import com.red.rpc.transmission.socket.client.SocketRpcClient;
 
 /**
  * @author red
@@ -14,21 +15,19 @@ public class Main {
     public static void main(String[] args) {
 
 
+        RpcClient rpcClient = new SocketRpcClient("127.0.0.1",8888);
+        RpcReq req = RpcReq.builder()
+                .reqId("123123")
+                .interfaceName("com.red.api.UserService")
+                .methodName("getUser")
+                .params(new Object[]{1L})
+                .paramTypes(new Class[]{Long.class})
+                .build();
+        RpcResp<?> rpcResp = rpcClient.sendReq(req);
+        System.out.println(rpcResp.getData());
+
 
     }
 
-//    private static <T> T invoke(Long id){
-//        RpcClient rpcClient;
-//        RpcReq req = RpcReq.builder()
-//                .reqId("123123")
-//                .interfaceName("com.red.api.UserService")
-//                .methodName("getUser")
-//                .params(new Object[]{id})
-//                .paramTypes(new Class[]{Long.class})
-//                .build();
-//        RpcResp<?> rpcResp = rpcClient.sendReq(req);
-//        return (T) rpcResp.getData();
-//
-//
-//    }
+
 }

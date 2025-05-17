@@ -1,6 +1,7 @@
 package com.red.server;
 
 import com.red.rpc.transmission.RpcServer;
+import com.red.rpc.transmission.socket.server.SocketRpcServer;
 
 /**
  * @author red
@@ -10,12 +11,7 @@ import com.red.rpc.transmission.RpcServer;
 public class Main {
     //启动之后，rpc server 就可以对外提供服务
     public static void main(String[] args) {
-        RpcServer rpcServer = new RpcServer() {
-            @Override
-            public void start() {
-
-            }
-        };
+        RpcServer rpcServer = new SocketRpcServer(8888);
         rpcServer.start();
     }
 }
