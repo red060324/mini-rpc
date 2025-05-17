@@ -16,10 +16,14 @@
             <groupId>com.red</groupId>
             <artifactId>test-api</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.red</groupId>-->
-<!--            <artifactId>rpc-core</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.red</groupId>
+            <artifactId>rpc-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.red</groupId>
+            <artifactId>rpc-core</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

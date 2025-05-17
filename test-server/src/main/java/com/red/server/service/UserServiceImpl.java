@@ -1,4 +1,4 @@
-package com.red.server;
+package com.red.server.service;
 
 import cn.hutool.core.util.IdUtil;
 import com.red.api.User;
