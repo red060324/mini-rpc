@@ -1,13 +1,8 @@
 package com.red.client;
 
 import com.red.api.User;
-import com.red.rpc.dto.RpcReq;
-import com.red.rpc.dto.RpcResp;
-import com.red.rpc.transmission.RpcClient;
-import com.red.rpc.transmission.socket.client.SocketRpcClient;
-import com.red.rpc.util.ThreadPoolUtils;
-
-import java.util.concurrent.ExecutorService;
+import com.red.api.UserService;
+import com.red.client.utils.ProxyUtils;
 
 /**
  * @author red
@@ -16,21 +11,14 @@ import java.util.concurrent.ExecutorService;
  */
 public class Main {
     public static void main(String[] args) {
-
-
-        RpcClient rpcClient = new SocketRpcClient("127.0.0.1",8888);
-        RpcReq req = RpcReq.builder()
-                .reqId("123123")
-                .interfaceName("com.red.api.UserService")
-                .methodName("getUser")
-                .params(new Object[]{1L})
-                .paramTypes(new Class[]{Long.class})
-                .build();
-        RpcResp<?> rpcResp = rpcClient.sendReq(req);
-        System.out.println(rpcResp.getData());
-
+        //获取某个接口的代理实现
+        UserService userService = ProxyUtils.getProxy(UserService.class);
+        //像调用本地方法一样调用
+        User user = userService.getUser(1L);
+        System.out.println(user);
 
     }
+
 
 
 }
