@@ -3,6 +3,7 @@ package com.red.server;
 import com.red.rpc.config.RpcServiceConfig;
 import com.red.rpc.transmission.RpcServer;
 import com.red.rpc.transmission.socket.server.SocketRpcServer;
+import com.red.rpc.util.ShutdownHookUtils;
 import com.red.server.service.UserServiceImpl;
 
 /**
@@ -17,6 +18,7 @@ public class Main {
         RpcServiceConfig config = new RpcServiceConfig(new UserServiceImpl());
         rpcServer.publishService(config);
         rpcServer.start();
+        ShutdownHookUtils.clearAll();
 
     }
 }

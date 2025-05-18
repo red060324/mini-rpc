@@ -7,6 +7,7 @@ import com.red.rpc.handler.RpcReqHandler;
 import com.red.rpc.provider.ServiceProvider;
 import com.red.rpc.provider.impl.SimpleServiceProvider;
 import com.red.rpc.transmission.RpcServer;
+import com.red.rpc.util.ThreadPoolUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author red
@@ -29,6 +31,7 @@ public class SocketRpcServer implements RpcServer {
     private final int port;
     private final RpcReqHandler rpcReqHandler;
     private final ServiceProvider serviceProvider;
+    private final ExecutorService executor;
 
 
     public SocketRpcServer(int port) {
@@ -39,6 +42,7 @@ public class SocketRpcServer implements RpcServer {
         this.port = port;
         this.serviceProvider = serviceProvider;
         this.rpcReqHandler = new RpcReqHandler(serviceProvider);
+        this.executor = ThreadPoolUtils.createIoIntensiveThreadPool("socket-rpc-server");
     }
 
     @Override
@@ -47,18 +51,7 @@ public class SocketRpcServer implements RpcServer {
             log.debug("服务启动，端口：{}",port);
             Socket socket;
             while ((socket = serverSocket.accept()) != null){
-                ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-                RpcReq rpcReq = (RpcReq) inputStream.readObject();
-                System.out.println(rpcReq);
-
-                //调用了rpcReq中的接口实现类的方法 得到数据
-                Object data = rpcReqHandler.invoke(rpcReq);
-
-                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-                RpcResp<?> rpcResp = RpcResp.success(rpcReq.getReqId(), data);
-                outputStream.writeObject(rpcResp);
-                outputStream.flush();
-
+                executor.submit(new SocketReqHandler(socket,rpcReqHandler));
             }
         } catch (Exception e) {
             log.error("服务端异常",e);
