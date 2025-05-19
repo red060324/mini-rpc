@@ -1,5 +1,6 @@
 package com.red.rpc.provider.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.red.rpc.config.RpcServiceConfig;
 import com.red.rpc.constant.RpcConstant;
 import com.red.rpc.factory.SingletonFactory;
@@ -50,7 +51,15 @@ public class ZkServiceProvider implements ServiceProvider {
      */
     @Override
     public Object getService(String rpcServiceName) {
-        return null;
+        if (StrUtil.isBlank(rpcServiceName)){
+            throw new IllegalArgumentException("服务名称不能为空");
+        }
+        // 检查缓存中是否存在该服务实例
+        if (!SERVICE_CACHE.containsKey(rpcServiceName)) {
+            throw new IllegalArgumentException("找不到对应服务:" + rpcServiceName);
+        }
+        // 如果存在，直接从缓存中取出并返回
+        return SERVICE_CACHE.get(rpcServiceName);
     }
 
     @SneakyThrows
