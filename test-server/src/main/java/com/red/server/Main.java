@@ -17,7 +17,7 @@ import com.red.server.service.UserServiceImpl;
 public class Main {
     //启动之后，rpc server 就可以对外提供服务
     public static void main(String[] args) {
-        RpcServer rpcServer = new SocketRpcServer(8888);
+        RpcServer rpcServer = new SocketRpcServer();
         RpcServiceConfig config = new RpcServiceConfig(new UserServiceImpl());
         rpcServer.publishService(config);
         rpcServer.start();

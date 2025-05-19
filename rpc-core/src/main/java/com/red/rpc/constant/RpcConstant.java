@@ -6,7 +6,7 @@ package com.red.rpc.constant;
  * @description
  */
 public class RpcConstant {
-    public static final int SERVER_PORT = 8888;
+    public static final int SERVER_PORT = 9999;
 
     public static final String ZK_IP ="192.168.214.201";
     public static final int ZK_PORT =2181;

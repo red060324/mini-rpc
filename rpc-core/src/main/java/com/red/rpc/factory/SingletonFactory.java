@@ -7,49 +7,50 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 单例工厂类
+ * 用于为指定类提供线程安全的单例实例获取
+ * 支持延迟加载和并发环境下的安全实例创建
+ */
 @Slf4j
 public class SingletonFactory {
-    // 定义一个线程安全的缓存 Map，用于存储类与其对应实例的映射
+    // 用于缓存各类的单例实例，保证线程安全
     private static final Map<Class<?>, Object> INSTANCE_CACHE = new ConcurrentHashMap<>();
 
+    // 私有构造方法，防止外部实例化
     private SingletonFactory() {
     }
 
     /**
-     * 获取指定类的单例实例。
-     * 如果缓存中已存在该类的实例，则直接返回；
-     * 否则通过反射创建实例并存入缓存后返回。
+     * 获取指定类的单例对象。
+     * 若缓存中存在则直接返回，否则通过反射创建并缓存。
+     * 采用双重检查锁保证并发安全。
      *
-     * @param clazz 需要获取单例的类的 Class 对象
-     * @param <T>   泛型参数，表示需要获取的实例类型
-     * @return 指定类的单例实例
-     * @throws IllegalArgumentException 如果传入的 clazz 为 null
+     * @param clazz 目标类的 Class 对象
+     * @param <T>   返回实例的类型
+     * @return clazz 对应的单例对象
+     * @throws IllegalArgumentException clazz 为空时抛出
      */
     @SneakyThrows
     public static <T> T getInstance(Class<T> clazz) {
-        // 检查传入的 clazz 是否为 null，如果为 null 则抛出非法参数异常
+        // 校验参数
         if (Objects.isNull(clazz)) {
             throw new IllegalArgumentException("clazz为空");
         }
 
-        // 检查缓存中是否已经存在该类的实例
+        // 先检查缓存
         if (INSTANCE_CACHE.containsKey(clazz)) {
-            // 如果存在，直接从缓存中取出并转换为对应的类型后返回
             return clazz.cast(INSTANCE_CACHE.get(clazz));
         }
 
-        // 双重检查锁机制，确保多线程环境下的安全性
+        // 双重检查锁，保证多线程下只创建一个实例
         synchronized (SingletonFactory.class) {
-            // 再次检查缓存中是否存在该类的实例（避免并发问题）
             if (INSTANCE_CACHE.containsKey(clazz)) {
                 return clazz.cast(INSTANCE_CACHE.get(clazz));
             }
-
-            // 使用反射创建类的实例
+            // 通过反射创建实例并缓存
             T t = clazz.getConstructor().newInstance();
-            // 将创建的实例存入缓存
             INSTANCE_CACHE.put(clazz, t);
-            // 返回创建的实例
             return t;
         }
     }
