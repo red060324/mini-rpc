@@ -21,9 +21,5 @@ public class Main {
         RpcServiceConfig config = new RpcServiceConfig(new UserServiceImpl());
         rpcServer.publishService(config);
         rpcServer.start();
-        ShutdownHookUtils.clearAll();
-
-
-
     }
 }
