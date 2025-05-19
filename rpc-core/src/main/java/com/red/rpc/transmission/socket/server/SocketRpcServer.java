@@ -1,6 +1,7 @@
 package com.red.rpc.transmission.socket.server;
 
 import com.red.rpc.config.RpcServiceConfig;
+import com.red.rpc.constant.RpcConstant;
 import com.red.rpc.dto.RpcReq;
 import com.red.rpc.dto.RpcResp;
 import com.red.rpc.handler.RpcReqHandler;
@@ -33,6 +34,9 @@ public class SocketRpcServer implements RpcServer {
     private final ServiceProvider serviceProvider;
     private final ExecutorService executor;
 
+    public SocketRpcServer() {
+        this(RpcConstant.SERVER_PORT);
+    }
 
     public SocketRpcServer(int port) {
         this(port,new SimpleServiceProvider());
