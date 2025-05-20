@@ -5,6 +5,7 @@ import com.red.api.UserService;
 import com.red.rpc.config.RpcServiceConfig;
 import com.red.rpc.proxy.RpcClientProxy;
 import com.red.rpc.transmission.RpcServer;
+import com.red.rpc.transmission.netty.server.NettyRpcServer;
 import com.red.rpc.transmission.socket.server.SocketRpcServer;
 import com.red.rpc.util.ShutdownHookUtils;
 import com.red.server.service.UserServiceImpl;
@@ -17,9 +18,12 @@ import com.red.server.service.UserServiceImpl;
 public class Main {
     //启动之后，rpc server 就可以对外提供服务
     public static void main(String[] args) {
-        RpcServer rpcServer = new SocketRpcServer();
-        RpcServiceConfig config = new RpcServiceConfig(new UserServiceImpl());
-        rpcServer.publishService(config);
+//        RpcServer rpcServer = new SocketRpcServer();
+//        RpcServiceConfig config = new RpcServiceConfig(new UserServiceImpl());
+//        rpcServer.publishService(config);
+//        rpcServer.start();
+
+        RpcServer rpcServer = new NettyRpcServer();
         rpcServer.start();
     }
 }

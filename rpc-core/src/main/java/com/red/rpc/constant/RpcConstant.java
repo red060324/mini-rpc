@@ -8,8 +8,11 @@ package com.red.rpc.constant;
 public class RpcConstant {
     public static final int SERVER_PORT = 9999;
 
+
     public static final String ZK_IP ="192.168.214.201";
     public static final int ZK_PORT =2181;
     public static final String ZK_RPC_ROOT_PATH ="/red-rpc";
+
+    public static final String NETTY_RPC_KEY ="RpcResp";
 
 }
