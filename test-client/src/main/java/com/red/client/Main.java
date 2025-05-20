@@ -17,14 +17,8 @@ public class Main {
         //获取某个接口的代理实现
         UserService userService = ProxyUtils.getProxy(UserService.class);
         //像调用本地方法一样调用
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-        for (int i = 0; i < 10; i++) {
-            executorService.execute(() -> {
-                User user = userService.getUser(1L);
-                System.out.println(user);
-            });
-        }
-
+        User user = userService.getUser(1L);
+        System.out.println(user);
     }
 
 
