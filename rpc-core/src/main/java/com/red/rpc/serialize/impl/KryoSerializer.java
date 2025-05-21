@@ -1,12 +1,14 @@
 package com.red.rpc.serialize.impl;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.red.rpc.dto.RpcReq;
 import com.red.rpc.dto.RpcResp;
 import com.red.rpc.serialize.Serializer;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -47,6 +49,17 @@ public class KryoSerializer implements Serializer {
 
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) {
-        return null;
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes); Input input = new Input(bais)) {
+            // 获取当前线程的Kryo实例
+            Kryo kryo = KRYO_THREAD_LOCAL.get();
+            // 反序列化对象
+            return kryo.readObject(input, clazz);
+        } catch (IOException e) {
+            log.error("Kryo反序列化失败", e);
+            throw new RuntimeException(e);
+        }finally {
+            // 清理ThreadLocal中的Kryo实例
+            KRYO_THREAD_LOCAL.remove();
+        }
     }
 }
