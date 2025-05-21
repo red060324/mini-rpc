@@ -11,6 +11,12 @@ import java.util.Objects;
  * @description
  */
 public class GzipCompress implements Compress {
+    /**
+     * Gzip压缩
+     *
+     * @param data 待压缩字节数组
+     * @return byte[]
+     */
     @Override
     public byte[] compress(byte[] data) {
         if (Objects.isNull(data) || data.length == 0) {
@@ -19,6 +25,12 @@ public class GzipCompress implements Compress {
         return ZipUtil.gzip(data);
     }
 
+    /**
+     * Gzip解压缩
+     *
+     * @param data 待解压缩字节数组
+     * @return byte[]
+     */
     @Override
     public byte[] decompress(byte[] data) {
         if (Objects.isNull(data) || data.length == 0) {

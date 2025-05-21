@@ -3,6 +3,8 @@ package com.red.rpc.transmission.netty.server;
 import com.red.rpc.config.RpcServiceConfig;
 import com.red.rpc.constant.RpcConstant;
 import com.red.rpc.transmission.RpcServer;
+import com.red.rpc.transmission.netty.codec.NettyRpcDecoder;
+import com.red.rpc.transmission.netty.codec.NettyRpcEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -36,8 +38,8 @@ public class NettyRpcServer implements RpcServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new StringDecoder());
-                            ch.pipeline().addLast(new StringEncoder());
+                            ch.pipeline().addLast(new NettyRpcDecoder());
+                            ch.pipeline().addLast(new NettyRpcEncoder());
                             ch.pipeline().addLast(new NettyRpcServerHandler());
                         }
                     })
