@@ -1,8 +1,13 @@
 package com.red.rpc.transmission.netty.client;
 
 import com.red.rpc.constant.RpcConstant;
+import com.red.rpc.dto.RpcMsg;
 import com.red.rpc.dto.RpcReq;
 import com.red.rpc.dto.RpcResp;
+import com.red.rpc.enums.CompressType;
+import com.red.rpc.enums.MsgType;
+import com.red.rpc.enums.SerializeType;
+import com.red.rpc.enums.VersionType;
 import com.red.rpc.transmission.RpcClient;
 import com.red.rpc.transmission.netty.codec.NettyRpcDecoder;
 import com.red.rpc.transmission.netty.codec.NettyRpcEncoder;
@@ -19,17 +24,29 @@ import io.netty.util.AttributeKey;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * @author red
- * @date 2025/5/20
- * @description
+ * Netty RPC客户端实现，负责通过Netty与服务端建立连接并发送RPC请求。
+ * 支持消息的序列化、压缩和自动生成唯一请求ID。
  */
 @Slf4j
 public class NettyRpcClient implements RpcClient {
+    /**
+     * Netty客户端启动引导类，负责配置和初始化客户端相关参数。
+     */
     private static final Bootstrap bootstrap;
+    /**
+     * 默认连接超时时间（毫秒）
+     */
     private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
+    /**
+     * 用于生成自增消息ID，保证每个消息唯一
+     */
+    private static final AtomicInteger ID_GEN = new AtomicInteger(0);
 
     static {
+        // 初始化Netty Bootstrap，配置事件循环组、通道类型、日志处理器、超时等参数
         bootstrap = new Bootstrap()
                 .group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class)
@@ -38,6 +55,7 @@ public class NettyRpcClient implements RpcClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
+                        // 添加解码器、编码器和客户端业务处理器到pipeline
                         ch.pipeline().addLast(new NettyRpcDecoder());
                         ch.pipeline().addLast(new NettyRpcEncoder());
                         ch.pipeline().addLast(new NettyRpcClientHandler());
@@ -45,22 +63,38 @@ public class NettyRpcClient implements RpcClient {
                 });
     }
 
+    /**
+     * 发送RPC请求到服务端，并同步等待响应
+     * @param req RPC请求对象
+     * @return RPC响应对象
+     */
     @SneakyThrows
     @Override
     public RpcResp<?> sendReq(RpcReq req) {
+        // 1. 建立与服务端的连接
         Channel channel = bootstrap.connect("127.0.0.1", RpcConstant.SERVER_PORT)
                 .sync()
                 .channel();
         log.info("客户端连接成功，远程地址: {}", channel.remoteAddress());
-        String interfaceName = req.getInterfaceName();
-        channel.writeAndFlush(interfaceName).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
 
-        //阻塞等待，直到关闭
+        // 2. 构造RpcMsg消息对象，包含版本、类型、序列化、压缩、请求ID和数据
+        RpcMsg rpcMsg = RpcMsg.builder()
+                .version(VersionType.VERSION1)
+                .msgType(MsgType.RPC_REQ)
+                .serializeType(SerializeType.KRYO)
+                .compressType(CompressType.GZIP)
+                .reqId(ID_GEN.getAndIncrement())
+                .data(req)
+                .build();
+
+        // 3. 发送消息到服务端，发送失败时关闭连接
+        channel.writeAndFlush(rpcMsg).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+
+        // 4. 阻塞等待通道关闭（即收到响应后关闭）
         channel.closeFuture().sync();
-        //获取响应
-        AttributeKey<String> key = AttributeKey.valueOf(RpcConstant.NETTY_RPC_KEY);
-        String s = channel.attr(key).get();
-        System.out.println(s);
-        return null;
+
+        // 5. 从通道属性中获取响应结果
+        AttributeKey<RpcResp<?>> key = AttributeKey.valueOf(RpcConstant.NETTY_RPC_KEY);
+        return channel.attr(key).get();
     }
 }

@@ -24,7 +24,7 @@ public class Main {
 //        User user = userService.getUser(1L);
 //        System.out.println(user);
         RpcClient rpcClient = new NettyRpcClient();
-        rpcClient.sendReq(RpcReq.builder().interfaceName("请求数据").build());
+        RpcResp<?> rpcResp = rpcClient.sendReq(RpcReq.builder().interfaceName("请求数据").build());
 
     }
 
