@@ -24,6 +24,7 @@
             <groupId>com.red</groupId>
             <artifactId>rpc-core</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>
