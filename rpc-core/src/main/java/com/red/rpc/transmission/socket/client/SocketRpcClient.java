@@ -8,11 +8,12 @@ import com.red.rpc.registry.impl.ZkServiceDiscovery;
 import com.red.rpc.transmission.RpcClient;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * @author red
@@ -32,7 +33,7 @@ public class SocketRpcClient implements RpcClient {
     }
 
     @Override
-    public RpcResp<?> sendReq(RpcReq rpcReq) {
+    public Future<RpcResp<?>> sendReq(RpcReq rpcReq) {
         InetSocketAddress address = serviceDiscovery.lookupService(rpcReq);
 
 
@@ -42,7 +43,7 @@ public class SocketRpcClient implements RpcClient {
             outputStream.flush();
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
             Object o = inputStream.readObject();
-            return (RpcResp<?>) o;
+            return CompletableFuture.completedFuture((RpcResp<?>) o);
         } catch (Exception e) {
             log.error("发送rpc请求失败",e);
         }

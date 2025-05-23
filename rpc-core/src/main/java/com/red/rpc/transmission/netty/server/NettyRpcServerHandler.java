@@ -65,7 +65,7 @@ public class NettyRpcServerHandler extends SimpleChannelInboundHandler<RpcMsg> {
 
         ctx.channel()
                 .writeAndFlush(msg)
-                .addListener(ChannelFutureListener.CLOSE);
+                .addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }
 
     @Override
