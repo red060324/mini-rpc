@@ -1,6 +1,7 @@
 package com.red.rpc.handler;
 
 import com.red.rpc.dto.RpcReq;
+import com.red.rpc.factory.SingletonFactory;
 import com.red.rpc.provider.ServiceProvider;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

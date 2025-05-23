@@ -7,6 +7,9 @@ import com.red.rpc.enums.CompressType;
 import com.red.rpc.enums.MsgType;
 import com.red.rpc.enums.SerializeType;
 import com.red.rpc.enums.VersionType;
+import com.red.rpc.factory.SingletonFactory;
+import com.red.rpc.handler.RpcReqHandler;
+import com.red.rpc.provider.ServiceProvider;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,26 +25,46 @@ import java.util.HashSet;
  */
 @Slf4j
 public class NettyRpcServerHandler extends SimpleChannelInboundHandler<RpcMsg> {
+
+    private final RpcReqHandler rpcReqHandler;
+
+    public NettyRpcServerHandler(ServiceProvider serviceProvider) {
+        this.rpcReqHandler = new RpcReqHandler(serviceProvider);
+    }
+
+    public NettyRpcServerHandler(RpcReqHandler rpcReqHandler) {
+        this.rpcReqHandler = rpcReqHandler;
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcMsg rpcMsg) throws Exception {
         log.debug("服务端接收到请求: {}", rpcMsg);
-        RpcReq rpcReq = (RpcReq) rpcMsg.getData();
 
-        RpcResp<String> rpcResp = RpcResp.success(rpcReq.getReqId(), "模拟响应数据");
+        // 区分心跳请求和业务请求
+        MsgType msgType;
+        Object data;
+        if (rpcMsg.getMsgType().isHeartbeat()){
+            msgType = MsgType.HEARTBEAT_RESP;
+            data = null;
+        } else {
+            RpcReq rpcReq = (RpcReq) rpcMsg.getData();
+            msgType = MsgType.RPC_RESP;
+            data = handleRpcReq(rpcReq);
+        }
 
+        // 构建响应消息
         RpcMsg msg = RpcMsg.builder()
                 .reqId(rpcMsg.getReqId())
-                .msgType(MsgType.RPC_RESP)
+                .msgType(msgType)
                 .compressType(CompressType.GZIP)
                 .serializeType(SerializeType.KRYO)
                 .version(VersionType.VERSION1)
-                .data(rpcResp)
+                .data(data)
                 .build();
 
         ctx.channel()
                 .writeAndFlush(msg)
                 .addListener(ChannelFutureListener.CLOSE);
-        ctx.close();
     }
 
     @Override
@@ -50,5 +73,16 @@ public class NettyRpcServerHandler extends SimpleChannelInboundHandler<RpcMsg> {
         log.error("服务端发生异常", cause);
         // 关闭连接
         ctx.close();
+    }
+
+    private RpcResp<?> handleRpcReq(RpcReq rpcReq) {
+        // 处理请求
+        try {
+            Object object = rpcReqHandler.invoke(rpcReq);
+            return RpcResp.success(rpcReq.getReqId(), object);
+        } catch (Exception e) {
+            log.info("调用失败", e);
+            return RpcResp.fail(rpcReq.getReqId(), e.getMessage());
+        }
     }
 }

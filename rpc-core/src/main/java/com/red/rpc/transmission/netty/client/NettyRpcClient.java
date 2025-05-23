@@ -8,6 +8,9 @@ import com.red.rpc.enums.CompressType;
 import com.red.rpc.enums.MsgType;
 import com.red.rpc.enums.SerializeType;
 import com.red.rpc.enums.VersionType;
+import com.red.rpc.factory.SingletonFactory;
+import com.red.rpc.registry.ServiceDiscovery;
+import com.red.rpc.registry.impl.ZkServiceDiscovery;
 import com.red.rpc.transmission.RpcClient;
 import com.red.rpc.transmission.netty.codec.NettyRpcDecoder;
 import com.red.rpc.transmission.netty.codec.NettyRpcEncoder;
@@ -24,6 +27,7 @@ import io.netty.util.AttributeKey;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -44,6 +48,16 @@ public class NettyRpcClient implements RpcClient {
      * 用于生成自增消息ID，保证每个消息唯一
      */
     private static final AtomicInteger ID_GEN = new AtomicInteger(0);
+
+    private final ServiceDiscovery serviceDiscovery;
+
+    public NettyRpcClient() {
+        this(SingletonFactory.getInstance(ZkServiceDiscovery.class));
+    }
+
+    public NettyRpcClient(ServiceDiscovery serviceDiscovery) {
+        this.serviceDiscovery = serviceDiscovery;
+    }
 
     static {
         // 初始化Netty Bootstrap，配置事件循环组、通道类型、日志处理器、超时等参数
@@ -71,8 +85,12 @@ public class NettyRpcClient implements RpcClient {
     @SneakyThrows
     @Override
     public RpcResp<?> sendReq(RpcReq req) {
+
+        InetSocketAddress address = serviceDiscovery.lookupService(req);
+
+
         // 1. 建立与服务端的连接
-        Channel channel = bootstrap.connect("127.0.0.1", RpcConstant.SERVER_PORT)
+        Channel channel = bootstrap.connect(address)
                 .sync()
                 .channel();
         log.info("客户端连接成功，远程地址: {}", channel.remoteAddress());

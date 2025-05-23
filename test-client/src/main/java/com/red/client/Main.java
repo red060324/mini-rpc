@@ -18,13 +18,11 @@ import java.util.concurrent.Executors;
  */
 public class Main {
     public static void main(String[] args) {
-//        //获取某个接口的代理实现
-//        UserService userService = ProxyUtils.getProxy(UserService.class);
-//        //像调用本地方法一样调用
-//        User user = userService.getUser(1L);
-//        System.out.println(user);
-        RpcClient rpcClient = new NettyRpcClient();
-        RpcResp<?> rpcResp = rpcClient.sendReq(RpcReq.builder().interfaceName("请求数据").build());
+        //获取某个接口的代理实现
+        UserService userService = ProxyUtils.getProxy(UserService.class);
+        //像调用本地方法一样调用
+        User user = userService.getUser(1L);
+        System.out.println(user);
 
     }
 
