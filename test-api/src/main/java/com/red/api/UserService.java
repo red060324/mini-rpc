@@ -1,5 +1,6 @@
 package com.red.api;
 
+import com.red.rpc.annotation.Limit;
 import com.red.rpc.annotation.Retry;
 
 /**
@@ -8,6 +9,6 @@ import com.red.rpc.annotation.Retry;
  * @description
  */
 public interface UserService {
-    @Retry
+//    @Retry
     User getUser(Long id);
 }

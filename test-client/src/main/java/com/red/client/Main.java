@@ -24,6 +24,16 @@ public class Main {
         User user = userService.getUser(1L);
         System.out.println(user);
 
+
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        for (int i = 0; i < 20; i++) {
+            executorService.execute(() -> {
+                User user1 = userService.getUser(1L);
+                System.out.println(user1);
+            });
+        }
+
     }
 
 
