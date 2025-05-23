@@ -13,6 +13,8 @@ import com.red.rpc.provider.ServiceProvider;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +56,6 @@ public class NettyRpcServerHandler extends SimpleChannelInboundHandler<RpcMsg> {
 
         // 构建响应消息
         RpcMsg msg = RpcMsg.builder()
-                .reqId(rpcMsg.getReqId())
                 .msgType(msgType)
                 .compressType(CompressType.GZIP)
                 .serializeType(SerializeType.KRYO)
@@ -85,4 +86,15 @@ public class NettyRpcServerHandler extends SimpleChannelInboundHandler<RpcMsg> {
             return RpcResp.fail(rpcReq.getReqId(), e.getMessage());
         }
     }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        boolean isNeedClose = evt instanceof IdleStateEvent && ((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE;
+        if (!isNeedClose){
+            super.userEventTriggered(ctx, evt);
+        }
+        log.debug("服务端长时间未接收到请求，关闭 channel :{}", ctx.channel().remoteAddress());
+        ctx.close();
+    }
+
 }

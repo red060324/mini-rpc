@@ -3,8 +3,15 @@ package com.red.rpc.transmission.netty.client;
 import com.red.rpc.constant.RpcConstant;
 import com.red.rpc.dto.RpcMsg;
 import com.red.rpc.dto.RpcResp;
+import com.red.rpc.enums.CompressType;
+import com.red.rpc.enums.MsgType;
+import com.red.rpc.enums.SerializeType;
+import com.red.rpc.enums.VersionType;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,12 +24,31 @@ import lombok.extern.slf4j.Slf4j;
 public class NettyRpcClientHandler extends SimpleChannelInboundHandler<RpcMsg> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcMsg rpcMsg) throws Exception {
+        if (rpcMsg.getMsgType().isHeartbeat()){
+            log.debug("客户端接收到心跳包: {}", rpcMsg);
+            return;
+        }
         log.debug("客户端接收到响应: {}", rpcMsg);
         RpcResp<?> rpcResp = (RpcResp<?>) rpcMsg.getData();
         AttributeKey<RpcResp<?>> key = AttributeKey.valueOf(RpcConstant.NETTY_RPC_KEY);
         ctx.channel().attr(key).set(rpcResp);
         // 关闭连接
         ctx.channel().close();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        boolean isNeedHeartBeat = evt instanceof IdleStateEvent && ((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE;
+        if (!isNeedHeartBeat){
+            super.userEventTriggered(ctx, evt);
+        }
+        log.debug("客户端发送心跳包");
+        ctx.writeAndFlush(RpcMsg.builder()
+                .msgType(MsgType.HEARTBEAT_REQ)
+                .compressType(CompressType.GZIP)
+                .serializeType(SerializeType.KRYO)
+                .version(VersionType.VERSION1)
+                .build()).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }
 
     @Override

@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 编码结构包括魔数、版本号、消息头、序列化类型、压缩类型、消息ID和消息体等。
  */
 public class NettyRpcEncoder extends MessageToByteEncoder<RpcMsg> {
+    private static final AtomicInteger ID_GEN = new AtomicInteger(0);
+
 
     /**
      * 编码方法，将RpcMsg对象编码为ByteBuf
@@ -46,7 +48,7 @@ public class NettyRpcEncoder extends MessageToByteEncoder<RpcMsg> {
         byteBuf.writeByte(rpcMsg.getCompressType().getCode());
 
         // 7. 写入消息ID
-        byteBuf.writeInt(rpcMsg.getReqId());
+        byteBuf.writeInt(ID_GEN.getAndIncrement());
 
         // 8. 计算消息体长度并写入消息体
         int msgLen = RpcConstant.REQ_HEAD_LEN;

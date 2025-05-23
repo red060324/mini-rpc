@@ -23,11 +23,13 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -44,10 +46,6 @@ public class NettyRpcClient implements RpcClient {
      * 默认连接超时时间（毫秒）
      */
     private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
-    /**
-     * 用于生成自增消息ID，保证每个消息唯一
-     */
-    private static final AtomicInteger ID_GEN = new AtomicInteger(0);
 
     private final ServiceDiscovery serviceDiscovery;
 
@@ -70,6 +68,7 @@ public class NettyRpcClient implements RpcClient {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         // 添加解码器、编码器和客户端业务处理器到pipeline
+                        ch.pipeline().addLast(new IdleStateHandler(0,5,0, TimeUnit.SECONDS));
                         ch.pipeline().addLast(new NettyRpcDecoder());
                         ch.pipeline().addLast(new NettyRpcEncoder());
                         ch.pipeline().addLast(new NettyRpcClientHandler());
@@ -101,7 +100,6 @@ public class NettyRpcClient implements RpcClient {
                 .msgType(MsgType.RPC_REQ)
                 .serializeType(SerializeType.KRYO)
                 .compressType(CompressType.GZIP)
-                .reqId(ID_GEN.getAndIncrement())
                 .data(req)
                 .build();
 
