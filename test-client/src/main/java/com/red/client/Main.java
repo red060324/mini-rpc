@@ -21,26 +21,8 @@ public class Main {
     public static void main(String[] args) {
         //获取某个接口的代理实现
         UserService userService = ProxyUtils.getProxy(UserService.class);
-        Scanner scanner = new Scanner(System.in);
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-
-        while (true){
-            System.out.println("请输入请求数量：");
-            int n = scanner.nextInt();
-            System.out.println("请输入用户id：");
-            Long id = scanner.nextLong();
-
-            for (int i = 0; i < n; i++) {
-                executorService.execute(() -> {
-                    try {
-                        User user1 = userService.getUser(id);
-                        System.out.println(user1);
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
-                });
-            }
-        }
+        User user = userService.getUser(10L);
+        System.out.println(user);
 
 
 

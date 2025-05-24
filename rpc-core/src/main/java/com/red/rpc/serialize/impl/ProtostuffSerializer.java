@@ -5,12 +5,14 @@ import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 基于Protostuff的序列化实现，高性能、跨语言的二进制序列化方案。
  * @author red
  * @date 2025/5/24
  */
+@Slf4j
 public class ProtostuffSerializer implements Serializer {
     // 线程安全的缓冲区，用于序列化
     private static final LinkedBuffer BUFFER = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
@@ -26,6 +28,8 @@ public class ProtostuffSerializer implements Serializer {
         Schema schema = RuntimeSchema.getSchema(aClass); // 获取对象的schema
         try {
             // 使用Protostuff进行序列化
+            log.info("=========使用Protostuff序列化=========");
+
             return ProtobufIOUtil.toByteArray(obj, schema, BUFFER);
         }  finally {
             // 清理缓冲区，避免内存泄漏
@@ -44,6 +48,7 @@ public class ProtostuffSerializer implements Serializer {
         Schema<T> schema = RuntimeSchema.getSchema(clazz);
         T message = schema.newMessage(); // 创建目标对象
         ProtobufIOUtil.mergeFrom(bytes, message, schema); // 填充数据
+        log.info("=========使用Protostuff反序列化=========");
         return message;
     }
 }

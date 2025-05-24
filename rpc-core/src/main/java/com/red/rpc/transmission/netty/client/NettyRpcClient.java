@@ -10,9 +10,11 @@ import com.red.rpc.enums.VersionType;
 import com.red.rpc.factory.SingletonFactory;
 import com.red.rpc.registry.ServiceDiscovery;
 import com.red.rpc.registry.impl.ZkServiceDiscovery;
+import com.red.rpc.spi.CustomLoader;
 import com.red.rpc.transmission.RpcClient;
 import com.red.rpc.transmission.netty.codec.NettyRpcDecoder;
 import com.red.rpc.transmission.netty.codec.NettyRpcEncoder;
+import com.red.rpc.util.ConfigUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -110,11 +112,13 @@ public class NettyRpcClient implements RpcClient {
         Channel channel = channelPool.get(address,() -> connect(address));
         log.info("客户端连接成功，远程地址: {}", channel.remoteAddress());
 
+        String serializer = ConfigUtils.getRpcConfig().getSerializer();
+
         // 2. 构造RpcMsg消息对象，包含版本、类型、序列化、压缩、请求ID和数据
         RpcMsg rpcMsg = RpcMsg.builder()
                 .version(VersionType.VERSION1)
                 .msgType(MsgType.RPC_REQ)
-                .serializeType(SerializeType.KRYO)
+                .serializeType(SerializeType.from(serializer))
                 .compressType(CompressType.GZIP)
                 .data(req)
                 .build();

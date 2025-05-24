@@ -1,0 +1,3 @@
+hessian=com.red.rpc.serialize.impl.HessianSerializer
+kryo=com.red.rpc.serialize.impl.KryoSerializer
+protostuff=com.red.rpc.serialize.impl.ProtostuffSerializer

@@ -7,6 +7,7 @@ import com.red.rpc.dto.RpcMsg;
 import com.red.rpc.factory.SingletonFactory;
 import com.red.rpc.serialize.Serializer;
 import com.red.rpc.serialize.impl.KryoSerializer;
+import com.red.rpc.spi.CustomLoader;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -71,9 +72,9 @@ public class NettyRpcEncoder extends MessageToByteEncoder<RpcMsg> {
      * @return 序列化并压缩后的字节数组
      */
     private byte[] dataToBytes(RpcMsg rpcMsg) {
-        // todo: 根据rpcMsg的序列化和压缩类型动态获取实现
+        String serializerTypeStr = rpcMsg.getSerializeType().getDesc();
         // 获取序列化器实例（默认Kryo）
-        Serializer serializer = SingletonFactory.getInstance(KryoSerializer.class);
+        Serializer serializer = CustomLoader.getLoader(Serializer.class).get(serializerTypeStr);
         byte[] data = serializer.serialize(rpcMsg.getData());
 
         // 获取压缩器实例（默认Gzip）

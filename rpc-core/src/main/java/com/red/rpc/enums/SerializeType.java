@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * @author red
@@ -16,7 +17,10 @@ import java.util.Arrays;
 @AllArgsConstructor
 public enum SerializeType {
 
-    KRYO((byte) 1, "Kryo序列化"),
+    CUSTOM((byte) 0, "custom"),
+    KRYO((byte) 1, "kryo"),
+    HESSIAN((byte) 2, "hessian"),
+    PROTOSTUFF((byte) 3, "protostuff"),
     ;
 
     private final byte code;
@@ -26,6 +30,13 @@ public enum SerializeType {
         return Arrays.stream(values())
                 .filter(o -> o.code == code)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("找不到对应的code: " + code));
+                .orElse(CUSTOM);
+    }
+
+    public static SerializeType from(String desc){
+        return Arrays.stream(values())
+                .filter(o -> Objects.equals(desc, o.desc))
+                .findFirst()
+                .orElse(CUSTOM);
     }
 }

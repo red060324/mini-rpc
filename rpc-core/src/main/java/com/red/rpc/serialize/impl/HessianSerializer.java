@@ -4,6 +4,7 @@ import com.caucho.hessian.io.HessianInput;
 import com.caucho.hessian.io.HessianOutput;
 import com.red.rpc.exception.RpcException;
 import com.red.rpc.serialize.Serializer;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,6 +16,7 @@ import java.io.IOException;
  * @author red
  * @date 2025/5/24
  */
+@Slf4j
 public class HessianSerializer implements Serializer {
     /**
      * 将对象序列化为字节数组
@@ -27,6 +29,7 @@ public class HessianSerializer implements Serializer {
             HessianOutput hessianOutput = new HessianOutput(baos);
             hessianOutput.writeObject(obj); // 写入对象
             hessianOutput.flush();
+            log.info("=========使用Hessian序列化=========");
             return baos.toByteArray();
         } catch (IOException e) {
             // 序列化失败时抛出自定义异常
@@ -45,6 +48,7 @@ public class HessianSerializer implements Serializer {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
             HessianInput hessianInput = new HessianInput(bais);
             Object o = hessianInput.readObject(); // 读取对象
+            log.info("=========使用Hessian反序列化=========");
             return clazz.cast(o);
         } catch (IOException e) {
             // 反序列化失败时抛出自定义异常

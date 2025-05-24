@@ -36,6 +36,8 @@ public class KryoSerializer implements Serializer {
             // 序列化对象,把obj变成byte数组写入到output流中
             kryo.writeObject(output, obj);
             output.flush();
+            log.info("=========使用Kryo序列化=========");
+
             return oos.toByteArray();
         } catch (Exception e) {
             log.error("Kryo序列化失败", e);
@@ -52,6 +54,8 @@ public class KryoSerializer implements Serializer {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes); Input input = new Input(bais)) {
             // 获取当前线程的Kryo实例
             Kryo kryo = KRYO_THREAD_LOCAL.get();
+            log.info("=========使用Kryo反序列化=========");
+
             // 反序列化对象
             return kryo.readObject(input, clazz);
         } catch (IOException e) {
