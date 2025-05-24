@@ -1,5 +1,7 @@
 package com.red.rpc.loadbalance;
 
+import com.red.rpc.dto.RpcReq;
+
 import java.util.List;
 
 /**
@@ -8,5 +10,5 @@ import java.util.List;
  * @description
  */
 public interface LoadBalance {
-    public String select(List<String> list);
+    String select(List<String> list,RpcReq rpcReq);
 }
