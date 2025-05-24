@@ -5,7 +5,10 @@ import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
+import com.red.rpc.annotation.Breaker;
 import com.red.rpc.annotation.Retry;
+import com.red.rpc.breaker.CircuitBreak;
+import com.red.rpc.breaker.CircuitBreakManager;
 import com.red.rpc.config.RpcServiceConfig;
 import com.red.rpc.dto.RpcReq;
 import com.red.rpc.dto.RpcResp;
@@ -98,6 +101,28 @@ public class RpcClientProxy implements InvocationHandler {
                 .group(config.getGroup()) // 分组信息
                 .build();
 
+        Breaker breaker = method.getAnnotation(Breaker.class);
+        if (Objects.isNull(breaker)){
+            return sendReqWithRetry(rpcReq, method);
+        }
+
+        CircuitBreak circuitBreak = CircuitBreakManager.get(rpcReq.rpcServiceName(), breaker);
+        if (!circuitBreak.canReq()) {
+            throw new RpcException("熔断器打开，拒绝请求");
+        }
+        try {
+            Object o = sendReqWithRetry(rpcReq, method);
+            circuitBreak.success();
+            return o;
+        } catch (RpcException e) {
+            circuitBreak.fail();
+            throw e;
+        }
+
+    }
+
+    @SneakyThrows
+    private Object sendReqWithRetry(RpcReq rpcReq, Method method) {
         Retry retry = method.getAnnotation(Retry.class);
         if (Objects.isNull(retry)){
             return sendReq(rpcReq);

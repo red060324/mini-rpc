@@ -30,7 +30,7 @@ public class NettyRpcClientHandler extends SimpleChannelInboundHandler<RpcMsg> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcMsg rpcMsg) throws Exception {
         if (rpcMsg.getMsgType().isHeartbeat()){
-            log.debug("客户端接收到心跳包: {}", rpcMsg);
+//            log.debug("客户端接收到心跳包: {}", rpcMsg);
             return;
         }
         log.debug("客户端接收到响应: {}", rpcMsg);
@@ -51,7 +51,7 @@ public class NettyRpcClientHandler extends SimpleChannelInboundHandler<RpcMsg> {
         if (!isNeedHeartBeat){
             super.userEventTriggered(ctx, evt);
         }
-        log.debug("客户端发送心跳包");
+//        log.debug("客户端发送心跳包");
         ctx.writeAndFlush(RpcMsg.builder()
                 .msgType(MsgType.HEARTBEAT_REQ)
                 .compressType(CompressType.GZIP)
